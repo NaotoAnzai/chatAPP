@@ -8,12 +8,22 @@ class ChatApi {
     final response = await http.post(
       Uri.parse("$baseUrl/chat"),
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"message": message}),
+      body: jsonEncode({
+        "messages": [
+          {"role": "user", "content": message},
+        ],
+      }),
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return data["reply"]; // APIの返り値に合わせて修正
+      final reply = data["reply"];
+      if (reply is String) {
+        return reply;
+      } else {
+        // dict が返ってきた場合は適当に文字列化する
+        return jsonEncode(reply);
+      }
     } else {
       throw Exception("Failed to send message: ${response.body}");
     }
